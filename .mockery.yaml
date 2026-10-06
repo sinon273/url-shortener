@@ -1,0 +1,11 @@
+with-expecter: true
+filename: "mock_{{.InterfaceName | snakecase}}.go"
+dir: "{{.InterfaceDir}}/mocks"
+mockname: "Mock{{.InterfaceName}}"
+outpkg: "mocks"
+packages:
+  github.com/sinon273/url-shortener/user/internal/service:
+    interfaces:
+      Repository:
+      Cache:
+      Auth:
