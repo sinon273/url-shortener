@@ -34,3 +34,12 @@ migrate-up:
 
 migrate-down:
 	migrate -path user/migrations -database "$(DATABASE_URL)" down 1
+
+run-url:
+	go run ./url/cmd
+
+test-url:
+	go test -race -v ./url/...
+
+lint-url:
+	golangci-lint run ./url/...

@@ -9,3 +9,8 @@ packages:
       Repository:
       Cache:
       Auth:
+  github.com/sinon273/url-shortener/url/internal/service:
+    interfaces:
+      Repository:
+      Cache:
+      UserClient:
