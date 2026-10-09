@@ -28,23 +28,16 @@ type Repository interface {
 }
 
 type Cache interface {
-	//кладет в кеш какую то сессию
 	SetSession(ctx context.Context, sessionID string, userID string, ttl time.Duration) error
 	GetSession(ctx context.Context, sessionID string) (string, error)
 	DelSession(ctx context.Context, sessionID string) error
 }
 
 type Auth interface {
-	//хэширует пароль для бд
 	HashPassword(password string) (string, error)
-	//проверяет паароль при входе, точнее хеши
 	ComparePassword(hash, password string) error
-	//создает jwt 15 мин
 	SignAccess(userID, sessionID string) (string, error)
-	//jwt токен но долго живущий 7дней
 	SignRefresh(userID, sessionID string) (string, error)
-	//проверить токен на каждом защищенном запросе
-	//проверить refrech token при обновлениее accesstoken(в RefreshToken)
 	Parse(token string) (string, string, error)
 	RefreshTTL() time.Duration
 	AccessTTL() time.Duration

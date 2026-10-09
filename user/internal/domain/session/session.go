@@ -3,11 +3,9 @@ package session_domain
 import "time"
 
 type Session struct {
-	ID     string
-	UserID string
-	//срок сессии
+	ID        string
+	UserID    string
 	ExpiresAt time.Time
-	//отозвана ли сессия вручную? при logout=true
 	IsRevoked bool
 }
 
