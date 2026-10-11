@@ -5,6 +5,7 @@ import (
 	"time"
 
 	url_domain "github.com/sinon273/url-shortener/url/internal/domain"
+	url_producer "github.com/sinon273/url-shortener/url/internal/producer"
 )
 
 type Service struct {
@@ -12,15 +13,26 @@ type Service struct {
 	cache        Cache
 	userClient   UserClient
 	shortURLBase string
+	producer     Producer
 }
 
-func NewService(repo Repository, cache Cache, client UserClient, shortURLBase string) *Service {
+func NewService(
+	repo Repository,
+	cache Cache,
+	userClient UserClient,
+	shortURLBase string,
+	producer Producer) *Service {
 	return &Service{
 		repo:         repo,
 		cache:        cache,
-		userClient:   client,
+		userClient:   userClient,
 		shortURLBase: shortURLBase,
+		producer:     producer,
 	}
+}
+
+type Producer interface {
+	PublishClick(ctx context.Context, event url_producer.ClickEvent) error
 }
 
 type Repository interface {

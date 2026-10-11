@@ -21,5 +21,5 @@ type Service interface {
 	GetURL(ctx context.Context, shortCode string) (url_domain.Link, error)
 	DeleteURL(ctx context.Context, shortCode, userID string) error
 	ListUserURLs(ctx context.Context, userID string, limit int, cursor string) ([]url_domain.Link, string, error)
-	Redirect(ctx context.Context, shortCode string) (string, error)
+	Redirect(ctx context.Context, shortCode, ip, userAgent, referer string) (string, error)
 }

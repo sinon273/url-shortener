@@ -9,12 +9,14 @@ import (
 	"syscall"
 
 	"github.com/redis/go-redis/v9"
+	"github.com/segmentio/kafka-go"
 	urlv1 "github.com/sinon273/url-shortener/shared/pkg/proto/url/v1"
 	userv1 "github.com/sinon273/url-shortener/shared/pkg/proto/user/v1"
 	url_cache "github.com/sinon273/url-shortener/url/internal/cache"
 	url_client "github.com/sinon273/url-shortener/url/internal/client"
 	url_config "github.com/sinon273/url-shortener/url/internal/config"
 	url_handler "github.com/sinon273/url-shortener/url/internal/handler"
+	url_producer "github.com/sinon273/url-shortener/url/internal/producer"
 	url_repository "github.com/sinon273/url-shortener/url/internal/repository"
 	url_service "github.com/sinon273/url-shortener/url/internal/service"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -30,7 +32,7 @@ func main() {
 
 	cfg, err := url_config.Load()
 	if err != nil {
-		fmt.Println("loading config: %w", err)
+		fmt.Printf("loading config: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -65,12 +67,22 @@ func main() {
 	}
 	defer userConn.Close()
 
+	kafkaWriter := &kafka.Writer{
+		Addr:                   kafka.TCP(cfg.KafkaBrokers...),
+		Topic:                  "click_events",
+		AllowAutoTopicCreation: true,
+		Balancer:               &kafka.LeastBytes{},
+	}
+	defer kafkaWriter.Close()
+
+	producer := url_producer.NewProducer(kafkaWriter)
+
 	userServiceClient := userv1.NewUserServiceClient(userConn)
 
 	repo := url_repository.NewRepository(coll)
 	cache := url_cache.NewCache(rdb)
 	userClient := url_client.NewClient(userServiceClient)
-	svc := url_service.NewService(repo, cache, userClient, cfg.ShortURLBase)
+	svc := url_service.NewService(repo, cache, userClient, cfg.ShortURLBase, producer)
 	h := url_handler.NewHandler(svc)
 
 	if err = repo.EnsureIndexes(ctx); err != nil {
@@ -90,6 +102,7 @@ func main() {
 
 	go func() {
 		<-ctx.Done()
+		_ = kafkaWriter.Close()
 		grpcServer.GracefulStop()
 	}()
 
