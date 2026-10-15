@@ -14,3 +14,7 @@ packages:
       Repository:
       Cache:
       UserClient:
+  github.com/sinon273/url-shortener/analytics/internal/service:
+    interfaces:
+      Repository:
+      UserClient:

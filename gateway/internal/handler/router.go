@@ -19,6 +19,7 @@ func (h *Handler) Router(authMW *gateway_middleware.Auth) *chi.Mux {
 		r.Post("/api/v1/urls", h.CreateURL)
 		r.Get("/api/v1/urls", h.ListURL)
 		r.Delete("/api/v1/urls/{code}", h.DeleteURL)
+		r.Get("/api/v1/analytics/{code}", h.GetAnalytics)
 	})
 
 	r.Get("/{code}", h.Redirect)

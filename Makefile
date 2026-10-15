@@ -1,7 +1,7 @@
 -include user/.env
 export
 
-.PHONY: proto-gen run test lint up down migrate-up migrate-down run-url test-url lint-url run-gateway test-int
+.PHONY: proto-gen run test lint up down migrate-up migrate-down run-url test-url lint-url run-gateway test-int run-analytics
 
 proto-gen:
 	cd shared/proto && buf generate
@@ -41,3 +41,6 @@ run-gateway:
 
 test-int:
 	cd gateway && go test -tags=integration -v ./test/... -timeout 20m
+
+run-analytics:
+	go run ./analytics/cmd
