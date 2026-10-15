@@ -15,6 +15,7 @@ func (s *Service) Redirect(ctx context.Context, shortCode, ip, userAgent, refere
 	if err == nil {
 		return originalURL, nil
 	}
+
 	link, err := s.repo.GetByShortCode(ctx, shortCode)
 	if err != nil {
 		return "", err
@@ -39,7 +40,6 @@ func (s *Service) Redirect(ctx context.Context, shortCode, ip, userAgent, refere
 		}
 
 		if err := s.producer.PublishClick(context.Background(), event); err != nil {
-			//TODO: Log error(slog будет позже)
 			_ = err
 		}
 	}()

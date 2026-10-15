@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	GatewayPort     string
-	UserServiceAddr string
-	URLServiceAddr  string
+	GatewayPort          string
+	UserServiceAddr      string
+	URLServiceAddr       string
+	AnalyticsServiceAddr string
 }
 
 func Load() (*Config, error) {
@@ -22,6 +23,7 @@ func Load() (*Config, error) {
 	gatewayPort := os.Getenv("GATEWAY_PORT")
 	userServiceAddr := os.Getenv("USER_SERVICE_ADDR")
 	urlServiceAddr := os.Getenv("URL_SERVICE_ADDR")
+	analyticsServiceAddr := os.Getenv("ANALYTICS_SERVICE_ADDR")
 
 	if gatewayPort == "" {
 		return nil, fmt.Errorf("GATEWAY_PORT is required")
@@ -32,10 +34,14 @@ func Load() (*Config, error) {
 	if urlServiceAddr == "" {
 		return nil, fmt.Errorf("URL_SERVICE_ADDR is required")
 	}
+	if analyticsServiceAddr == "" {
+		return nil, fmt.Errorf("ANALYTICS_SERVICE_ADDR is required")
+	}
 
 	return &Config{
-		GatewayPort:     gatewayPort,
-		UserServiceAddr: userServiceAddr,
-		URLServiceAddr:  urlServiceAddr,
+		GatewayPort:          gatewayPort,
+		UserServiceAddr:      userServiceAddr,
+		URLServiceAddr:       urlServiceAddr,
+		AnalyticsServiceAddr: analyticsServiceAddr,
 	}, nil
 }

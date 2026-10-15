@@ -14,6 +14,7 @@ import (
 	gateway_config "github.com/sinon273/url-shortener/gateway/internal/config"
 	gateway_handler "github.com/sinon273/url-shortener/gateway/internal/handler"
 	gateway_middleware "github.com/sinon273/url-shortener/gateway/internal/middleware"
+	analyticsv1 "github.com/sinon273/url-shortener/shared/pkg/proto/analytics/v1"
 	urlv1 "github.com/sinon273/url-shortener/shared/pkg/proto/url/v1"
 	userv1 "github.com/sinon273/url-shortener/shared/pkg/proto/user/v1"
 	"google.golang.org/grpc"
@@ -35,18 +36,26 @@ func main() {
 		fmt.Println("failed to connect user:", err)
 		os.Exit(1)
 	}
+	defer userConn.Close()
 	urlConn, err := grpc.NewClient(cfg.URLServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		fmt.Println("failed to connect url:", err)
 		os.Exit(1)
 	}
-	defer userConn.Close()
 	defer urlConn.Close()
+
+	analyticsConn, err := grpc.NewClient(cfg.AnalyticsServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		fmt.Println("failed to connect analytics:", err)
+		os.Exit(1)
+	}
+	defer analyticsConn.Close()
 
 	userClient := userv1.NewUserServiceClient(userConn)
 	urlClient := urlv1.NewURLServiceClient(urlConn)
+	analyticsClient := analyticsv1.NewAnalyticsServiceClient(analyticsConn)
 
-	client := gateway_client.NewClient(userClient, urlClient)
+	client := gateway_client.NewClient(userClient, urlClient, analyticsClient)
 	authMW := gateway_middleware.NewAuth(userClient)
 	h := gateway_handler.NewHandler(client)
 	router := h.Router(authMW)
