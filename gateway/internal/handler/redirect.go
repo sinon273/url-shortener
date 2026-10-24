@@ -31,7 +31,7 @@ func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.URL().Redirect(r.Context(), req)
 	if err != nil {
-		mapGRPCError(w, err)
+		mapGRPCError(w, r, err)
 		return
 	}
 

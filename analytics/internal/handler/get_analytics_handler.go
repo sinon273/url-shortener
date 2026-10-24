@@ -13,7 +13,7 @@ func (h *Handler) GetAnalytics(ctx context.Context, req *analyticsv1.GetAnalytic
 
 	a, err := h.service.GetAnalytics(ctx, shortCode, userID, days)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, mapError(ctx, err)
 	}
 	clicksByDay := make([]*analyticsv1.DayClicks, len(a.ClicksByDay))
 	for i, d := range a.ClicksByDay {

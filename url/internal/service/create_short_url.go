@@ -5,10 +5,12 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
 	url_domain "github.com/sinon273/url-shortener/url/internal/domain"
+	url_metrics "github.com/sinon273/url-shortener/url/internal/metrics"
 )
 
 const alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -24,7 +26,10 @@ func (s *Service) CreateShortURL(ctx context.Context, originalURL, userID string
 		if err != nil {
 			return "", "", url_domain.ErrUnavailable
 		}
-		_ = s.cache.SetLimit(ctx, userID, limit, 5*time.Minute)
+		err = s.cache.SetLimit(ctx, userID, limit, 5*time.Minute)
+		if err != nil {
+			slog.ErrorContext(ctx, "failed to cache limit", "err", err, "user_id", userID)
+		}
 	}
 
 	_, err = s.cache.GetCounter(ctx, userID)
@@ -33,7 +38,10 @@ func (s *Service) CreateShortURL(ctx context.Context, originalURL, userID string
 		if err != nil {
 			return "", "", url_domain.ErrUnavailable
 		}
-		_ = s.cache.SetCounter(ctx, userID, count)
+		err = s.cache.SetCounter(ctx, userID, count)
+		if err != nil {
+			slog.ErrorContext(ctx, "failed to cache set counter", "err", err, "user_id", userID)
+		}
 	}
 
 	used, err := s.cache.IncrCounter(ctx, userID)
@@ -41,7 +49,10 @@ func (s *Service) CreateShortURL(ctx context.Context, originalURL, userID string
 		return "", "", err
 	}
 	if used > limit {
-		_ = s.cache.DecrCounter(ctx, userID)
+		err = s.cache.DecrCounter(ctx, userID)
+		if err != nil {
+			slog.ErrorContext(ctx, "failed to cache decrCounter", "err", err, "user_id", userID)
+		}
 		return "", "", url_domain.ErrResourceExhausted
 	}
 
@@ -54,7 +65,11 @@ func (s *Service) CreateShortURL(ctx context.Context, originalURL, userID string
 	for i := 0; i < 3; i++ {
 		code, err := generateShortCode()
 		if err != nil {
-			_ = s.cache.DecrCounter(ctx, userID)
+
+			if decrErr := s.cache.DecrCounter(ctx, userID); decrErr != nil {
+				slog.ErrorContext(ctx, "failed to cache decrCounter", "err", decrErr, "user_id", userID)
+			}
+
 			return "", "", err
 		}
 
@@ -78,15 +93,20 @@ func (s *Service) CreateShortURL(ctx context.Context, originalURL, userID string
 			continue
 		}
 
-		_ = s.cache.DecrCounter(ctx, userID)
+		err = s.cache.DecrCounter(ctx, userID)
+		if err != nil {
+			slog.ErrorContext(ctx, "failed to cache decrCounter", "err", err, "user_id", userID)
+		}
 		return "", "", err
 	}
 
 	if shortCode == "" {
-		_ = s.cache.DecrCounter(ctx, userID)
+		if decrErr := s.cache.DecrCounter(ctx, userID); decrErr != nil {
+			slog.ErrorContext(ctx, "failed to cache decrCounter", "err", decrErr, "user_id", userID)
+		}
 		return "", "", fmt.Errorf("failed to generate unique short code")
 	}
-
+	url_metrics.LinksCreatedTotal.Inc()
 	shortURL = s.shortURLBase + "/" + shortCode
 	return shortCode, shortURL, nil
 }

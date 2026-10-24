@@ -38,7 +38,7 @@ func (h *Handler) GetAnalytics(w http.ResponseWriter, r *http.Request) {
 		Days:      days,
 	})
 	if err != nil {
-		mapGRPCError(w, err)
+		mapGRPCError(w, r, err)
 		return
 	}
 

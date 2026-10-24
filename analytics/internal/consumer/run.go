@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -21,10 +22,15 @@ func (c *Consumer) Run(ctx context.Context) error {
 				if ctx.Err() != nil {
 					return
 				}
-				errCh <- err
+				slog.ErrorContext(ctx, "failed to fetch message, retrying in 2s", "err", err)
+				time.Sleep(2 * time.Second)
+				continue
+			}
+			select {
+			case msgCh <- msg:
+			case <-ctx.Done():
 				return
 			}
-			msgCh <- msg
 		}
 	}()
 	timer := time.NewTimer(c.flushInterval)
@@ -35,6 +41,7 @@ func (c *Consumer) Run(ctx context.Context) error {
 			var msgJson analytics_domain.ClickEvent
 			err := json.Unmarshal(msg.Value, &msgJson)
 			if err != nil {
+				slog.ErrorContext(ctx, "failed to unmarshal click event", "err", err)
 				return fmt.Errorf("unmarshal analytics click event: %w", err)
 			}
 			c.events = append(c.events, msgJson)
@@ -54,6 +61,8 @@ func (c *Consumer) Run(ctx context.Context) error {
 			timer.Reset(c.flushInterval)
 		case err := <-errCh:
 			if err != nil {
+				slog.ErrorContext(ctx, "failed to fetch message", "err", err)
+
 				return fmt.Errorf("fetch: %w", err)
 			}
 		case <-ctx.Done():

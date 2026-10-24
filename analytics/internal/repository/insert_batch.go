@@ -3,11 +3,17 @@ package analytics_repository
 import (
 	"context"
 	"fmt"
+	"time"
 
 	analytics_domain "github.com/sinon273/url-shortener/analytics/internal/domain"
+	analytics_metrics "github.com/sinon273/url-shortener/analytics/internal/metrics"
 )
 
 func (r *Repository) InsertBatch(ctx context.Context, events []analytics_domain.ClickEvent) error {
+	start := time.Now()
+	defer func() {
+		analytics_metrics.ClickhouseBatchInsertDuration.Observe(time.Since(start).Seconds())
+	}()
 	if len(events) == 0 {
 		return nil
 	}

@@ -1,6 +1,7 @@
 package gateway_handler
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -26,8 +27,10 @@ func (h *Handler) DeleteURL(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err := h.client.URL().DeleteURL(r.Context(), req)
 	if err != nil {
-		mapGRPCError(w, err)
+		mapGRPCError(w, r, err)
 		return
 	}
+
+	slog.InfoContext(r.Context(), "url deleted", "short_code", shortCode)
 	w.WriteHeader(http.StatusNoContent)
 }

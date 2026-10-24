@@ -3,6 +3,7 @@ package user_service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/sinon273/url-shortener/user/internal/domain"
 )
@@ -23,6 +24,9 @@ func (s *Service) RefreshToken(ctx context.Context, refreshToken string) (string
 	if err != nil {
 		return "", fmt.Errorf("sign access: %w", err)
 	}
-	_ = s.cache.SetSession(ctx, sessionID, userID, s.auth.AccessTTL())
+	err = s.cache.SetSession(ctx, sessionID, userID, s.auth.AccessTTL())
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to set cache refresh_token", "err", err, "session_id", sessionID)
+	}
 	return accessToken, nil
 }

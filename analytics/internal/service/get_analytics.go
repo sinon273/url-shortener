@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	analytics_domain "github.com/sinon273/url-shortener/analytics/internal/domain"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (s *Service) GetAnalytics(ctx context.Context, shortCode, userID string, days int) (analytics_domain.Analytics, error) {
@@ -18,10 +16,7 @@ func (s *Service) GetAnalytics(ctx context.Context, shortCode, userID string, da
 	}
 	owner, err := s.urlClient.GetLinkOwner(ctx, shortCode)
 	if err != nil {
-		if status.Code(err) == codes.Unavailable {
-			return analytics_domain.Analytics{}, analytics_domain.ErrUnavailable
-		}
-		return analytics_domain.Analytics{}, fmt.Errorf("get link owner: %w", err)
+		return analytics_domain.Analytics{}, fmt.Errorf("get_link_owner", err)
 	}
 	if owner != userID {
 		return analytics_domain.Analytics{}, analytics_domain.ErrPermissionDenied

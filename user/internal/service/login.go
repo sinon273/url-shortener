@@ -3,6 +3,7 @@ package user_service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/sinon273/url-shortener/user/internal/domain"
@@ -11,7 +12,7 @@ import (
 func (s *Service) Login(ctx context.Context, email string, password string) (string, string, error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		return "", "", domain.ErrNotFound
+		return "", "", domain.ErrUnauthenticated
 	}
 	err = s.auth.ComparePassword(user.PasswordHash, password)
 	if err != nil {
@@ -32,7 +33,9 @@ func (s *Service) Login(ctx context.Context, email string, password string) (str
 		return "", "", fmt.Errorf("sign refresh: %w", err)
 	}
 
-	_ = s.cache.SetSession(ctx, sessionID, user.ID, s.auth.AccessTTL())
-
+	err = s.cache.SetSession(ctx, sessionID, user.ID, s.auth.AccessTTL())
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to set session cache", "err", err, "session_id", sessionID)
+	}
 	return access, refresh, nil
 }

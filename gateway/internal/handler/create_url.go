@@ -2,6 +2,7 @@ package gateway_handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	gateway_middleware "github.com/sinon273/url-shortener/gateway/internal/middleware"
@@ -32,10 +33,11 @@ func (h *Handler) CreateURL(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.URL().CreateShortURL(r.Context(), &req)
 	if err != nil {
-		mapGRPCError(w, err)
+		mapGRPCError(w, r, err)
 		return
 	}
 
+	slog.InfoContext(r.Context(), "url created", "short_code", resp.ShortCode)
 	writeJSON(w, http.StatusCreated, resp)
 
 }
