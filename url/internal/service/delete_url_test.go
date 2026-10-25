@@ -14,7 +14,7 @@ func TestDeleteURL_PermissionDenied(t *testing.T) {
 	mockRepo := mocks.NewMockRepository(t)
 	mockCache := mocks.NewMockCache(t)
 	mockUserClient := mocks.NewMockUserClient(t)
-	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url")
+	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url", nil)
 
 	link := url_domain.Link{
 		ShortCode: "abc1234",
@@ -36,7 +36,7 @@ func TestDeleteURL_Success(t *testing.T) {
 	mockRepo := mocks.NewMockRepository(t)
 	mockCache := mocks.NewMockCache(t)
 	mockUserClient := mocks.NewMockUserClient(t)
-	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url")
+	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url", nil)
 
 	link := url_domain.Link{
 		ShortCode: "abc1234",

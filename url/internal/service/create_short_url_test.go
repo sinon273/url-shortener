@@ -17,7 +17,7 @@ func TestCreateShortURL_Success(t *testing.T) {
 	mockCache := mocks.NewMockCache(t)
 	mockUserClient := mocks.NewMockUserClient(t)
 
-	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url")
+	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url", nil)
 
 	userID := "user-1"
 
@@ -54,7 +54,7 @@ func TestCreateShortURL_LimitExceeded(t *testing.T) {
 	mockCache := mocks.NewMockCache(t)
 	mockUserClient := mocks.NewMockUserClient(t)
 
-	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url")
+	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url", nil)
 
 	userID := "user-1"
 
@@ -89,7 +89,7 @@ func TestCreateShortURL_MongoInsertFails(t *testing.T) {
 	mockCache := mocks.NewMockCache(t)
 	mockUserClient := mocks.NewMockUserClient(t)
 
-	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url")
+	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url", nil)
 
 	userID := "user-1"
 

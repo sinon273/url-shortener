@@ -51,7 +51,11 @@ func main() {
 		slog.Error("failed to init tracing", "err", err)
 		os.Exit(1)
 	}
-	defer shutdown(context.Background())
+	defer func() {
+		if err := shutdown(context.Background()); err != nil {
+			slog.Error("failed to shutdown tracing", "err", err)
+		}
+	}()
 
 	userConn, err := grpc.NewClient(
 		cfg.UserServiceAddr,
@@ -62,7 +66,11 @@ func main() {
 		slog.Error("failed to connect user", "err", err)
 		os.Exit(1)
 	}
-	defer userConn.Close()
+	defer func() {
+		if err := userConn.Close(); err != nil {
+			slog.Error("failed to close user conn", "err", err)
+		}
+	}()
 
 	urlConn, err := grpc.NewClient(
 		cfg.URLServiceAddr,
@@ -73,7 +81,11 @@ func main() {
 		slog.Error("failed to connect url", "err", err)
 		os.Exit(1)
 	}
-	defer urlConn.Close()
+	defer func() {
+		if err := urlConn.Close(); err != nil {
+			slog.Error("failed to close url conn", "err", err)
+		}
+	}()
 
 	analyticsConn, err := grpc.NewClient(
 		cfg.AnalyticsServiceAddr,
@@ -84,7 +96,11 @@ func main() {
 		slog.Error("failed to connect analytics", "err", err)
 		os.Exit(1)
 	}
-	defer analyticsConn.Close()
+	defer func() {
+		if err := analyticsConn.Close(); err != nil {
+			slog.Error("failed to close analytics conn", "err", err)
+		}
+	}()
 
 	userClient := userv1.NewUserServiceClient(userConn)
 	urlClient := urlv1.NewURLServiceClient(urlConn)

@@ -32,20 +32,22 @@ func (s *Service) Redirect(ctx context.Context, shortCode, ip, userAgent, refere
 		return "", url_domain.ErrNotFound
 	}
 
-	go func() {
-		event := url_producer.ClickEvent{
-			ShortCode: shortCode,
-			UserID:    link.UserID,
-			ClickedAt: time.Now().UTC(),
-			IP:        ip,
-			UserAgent: userAgent,
-			Referer:   referer,
-		}
+	if s.producer != nil {
+		go func() {
+			event := url_producer.ClickEvent{
+				ShortCode: shortCode,
+				UserID:    link.UserID,
+				ClickedAt: time.Now().UTC(),
+				IP:        ip,
+				UserAgent: userAgent,
+				Referer:   referer,
+			}
 
-		if err := s.producer.PublishClick(context.Background(), event); err != nil {
-			slog.ErrorContext(context.Background(), "failed to publish click event", "err", err)
-		}
-	}()
+			if err := s.producer.PublishClick(context.Background(), event); err != nil {
+				slog.ErrorContext(context.Background(), "failed to publish click event", "err", err)
+			}
+		}()
+	}
 
 	err = s.cache.SetLink(ctx, shortCode, link.OriginalURL, linkCacheTTL)
 	if err != nil {
