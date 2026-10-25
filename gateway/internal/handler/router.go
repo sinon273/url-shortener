@@ -8,6 +8,8 @@ import (
 func (h *Handler) Router(authMW *gateway_middleware.Auth) *chi.Mux {
 	r := chi.NewRouter()
 
+	r.Use(gateway_middleware.MetricsMiddleware)
+
 	r.Post("/api/v1/auth/register", h.Register)
 	r.Post("/api/v1/auth/login", h.Login)
 	r.Post("/api/v1/auth/refresh", h.Refresh)

@@ -1,14 +1,18 @@
 package url_handler
 
 import (
+	"context"
 	"errors"
+	"log/slog"
 
 	url_domain "github.com/sinon273/url-shortener/url/internal/domain"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func mapError(err error) error {
+func mapError(ctx context.Context, err error) error {
+	slog.ErrorContext(ctx, "request failed", "err", err)
+
 	switch {
 	case errors.Is(err, url_domain.ErrInvalidArgument):
 		return status.Error(codes.InvalidArgument, err.Error())

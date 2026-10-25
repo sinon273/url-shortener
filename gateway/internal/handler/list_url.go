@@ -47,7 +47,7 @@ func (h *Handler) ListURL(w http.ResponseWriter, r *http.Request) {
 		Limit:  limit,
 	})
 	if err != nil {
-		mapGRPCError(w, err)
+		mapGRPCError(w, r, err)
 		return
 	}
 

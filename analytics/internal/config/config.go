@@ -17,6 +17,10 @@ type Config struct {
 	ClickHousePassword   string
 	URLServiceAddr       string
 	AnalyticsServicePort string
+	MetricsPort          string
+	OtelExporter         string
+	OtelService          string
+	LogLevel             string
 }
 
 func Load() (*Config, error) {
@@ -31,6 +35,10 @@ func Load() (*Config, error) {
 	clickHousePassword := os.Getenv("CLICKHOUSE_PASSWORD")
 	urlServiceAddr := os.Getenv("URL_SERVICE_ADDR")
 	analyticsServicePort := os.Getenv("ANALYTICS_SERVICE_PORT")
+	metricsPort := os.Getenv("METRICS_PORT")
+	otelExporter := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	otelService := os.Getenv("OTEL_SERVICE_NAME")
+	logLevel := os.Getenv("LOG_LEVEL")
 
 	if kafkaBrokersRaw == "" {
 		return nil, fmt.Errorf("KAFKA_BROKERS is required")
@@ -50,6 +58,18 @@ func Load() (*Config, error) {
 	if analyticsServicePort == "" {
 		return nil, fmt.Errorf("ANALYTICS_SERVICE_PORT is required")
 	}
+	if metricsPort == "" {
+		return nil, fmt.Errorf("METRICS_PORT is required")
+	}
+	if otelExporter == "" {
+		return nil, fmt.Errorf("OTEL_EXPORTER_OTLP_ENDPOINT is required")
+	}
+	if otelService == "" {
+		return nil, fmt.Errorf("OTEL_SERVICE_NAME is required")
+	}
+	if logLevel == "" {
+		return nil, fmt.Errorf("LOG_LEVEL is required")
+	}
 
 	return &Config{
 		KafkaBrokers:         strings.Split(kafkaBrokersRaw, ","),
@@ -59,5 +79,9 @@ func Load() (*Config, error) {
 		ClickHousePassword:   clickHousePassword,
 		URLServiceAddr:       urlServiceAddr,
 		AnalyticsServicePort: analyticsServicePort,
+		MetricsPort:          metricsPort,
+		OtelService:          otelService,
+		OtelExporter:         otelExporter,
+		LogLevel:             logLevel,
 	}, nil
 }

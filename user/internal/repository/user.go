@@ -16,7 +16,9 @@ func (r *Repository) CreateUserWithSubscription(ctx context.Context, email, pass
 	if err != nil {
 		return "", fmt.Errorf("begin transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
+	defer func() {
+		_ = tx.Rollback(ctx)
+	}()
 
 	var userID string
 

@@ -1,13 +1,15 @@
 package gateway_handler
 
 import (
+	"log/slog"
 	"net/http"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func mapGRPCError(w http.ResponseWriter, err error) {
+func mapGRPCError(w http.ResponseWriter, r *http.Request, err error) {
+	slog.ErrorContext(r.Context(), "grpc request failed", "err", err)
 	st, ok := status.FromError(err)
 	if !ok {
 		http.Error(w, "internal error", http.StatusInternalServerError)

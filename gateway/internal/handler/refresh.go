@@ -2,6 +2,7 @@ package gateway_handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 
 	userv1 "github.com/sinon273/url-shortener/shared/pkg/proto/user/v1"
@@ -18,8 +19,10 @@ func (h *Handler) Refresh(w http.ResponseWriter, r *http.Request) {
 
 	resp, err := h.client.User().RefreshToken(ctx, &req)
 	if err != nil {
-		mapGRPCError(w, err)
+		mapGRPCError(w, r, err)
 		return
 	}
+
+	slog.InfoContext(r.Context(), "user refreshed")
 	writeJSON(w, http.StatusOK, resp)
 }

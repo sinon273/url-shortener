@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/segmentio/kafka-go"
+	url_metrics "github.com/sinon273/url-shortener/url/internal/metrics"
 )
 
 func (p *Producer) PublishClick(ctx context.Context, event ClickEvent) error {
@@ -18,6 +19,7 @@ func (p *Producer) PublishClick(ctx context.Context, event ClickEvent) error {
 	if err != nil {
 		return fmt.Errorf("write click event: %w", err)
 	}
+	url_metrics.KafkaMessagesProduced.Inc()
 	return nil
 
 }

@@ -2,6 +2,7 @@ package user_transport_grpc
 
 import (
 	"context"
+	"log/slog"
 
 	userv1 "github.com/sinon273/url-shortener/shared/pkg/proto/user/v1"
 )
@@ -9,9 +10,10 @@ import (
 func (h *Handler) Login(ctx context.Context, req *userv1.LoginRequest) (*userv1.LoginResponse, error) {
 	accessToken, refreshToken, err := h.service.Login(ctx, req.Email, req.Password)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, mapError(ctx, err)
 	}
 
+	slog.InfoContext(ctx, "user logged in")
 	return &userv1.LoginResponse{
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,

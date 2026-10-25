@@ -9,7 +9,7 @@ import (
 func (h *Handler) ListUserURLs(ctx context.Context, req *urlv1.ListUserURLsRequest) (*urlv1.ListUserURLsResponse, error) {
 	links, nextCursor, err := h.service.ListUserURLs(ctx, req.UserId, int(req.Limit), req.Cursor)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, mapError(ctx, err)
 	}
 
 	items := make([]*urlv1.URLItem, len(links))

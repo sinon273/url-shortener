@@ -15,14 +15,15 @@ func TestRedirect_CacheHit(t *testing.T) {
 	mockRepo := mocks.NewMockRepository(t)
 	mockCache := mocks.NewMockCache(t)
 	mockUserClient := mocks.NewMockUserClient(t)
-	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url")
+
+	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url", nil)
 
 	mockCache.EXPECT().
 		GetLink(ctx, "abc1234").
 		Return("https://example.com", nil).
 		Once()
 
-	url, err := svc.Redirect(ctx, "abc1234")
+	url, err := svc.Redirect(ctx, "abc1234", "", "", "")
 
 	require.NoError(t, err)
 	require.Equal(t, "https://example.com", url)
@@ -33,7 +34,9 @@ func TestRedirect_CacheMiss_MongoHit(t *testing.T) {
 	mockRepo := mocks.NewMockRepository(t)
 	mockCache := mocks.NewMockCache(t)
 	mockUserClient := mocks.NewMockUserClient(t)
-	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url")
+
+	// Добавили nil пятым аргументом
+	svc := NewService(mockRepo, mockCache, mockUserClient, "https://short.url", nil)
 
 	link := url_domain.Link{
 		ShortCode:   "abc1234",
@@ -56,7 +59,7 @@ func TestRedirect_CacheMiss_MongoHit(t *testing.T) {
 		Return(nil).
 		Once()
 
-	url, err := svc.Redirect(ctx, "abc1234")
+	url, err := svc.Redirect(ctx, "abc1234", "", "", "")
 
 	require.NoError(t, err)
 	require.Equal(t, "https://example.com", url)

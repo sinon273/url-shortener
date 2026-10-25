@@ -9,7 +9,7 @@ import (
 func (h *Handler) Redirect(ctx context.Context, req *urlv1.RedirectRequest) (*urlv1.RedirectResponse, error) {
 	originalURL, err := h.service.Redirect(ctx, req.ShortCode, req.Ip, req.UserAgent, req.Referer)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, mapError(ctx, err)
 	}
 	return &urlv1.RedirectResponse{
 		OriginalUrl: originalURL,

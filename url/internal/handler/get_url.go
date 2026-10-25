@@ -9,7 +9,7 @@ import (
 func (h *Handler) GetURL(ctx context.Context, req *urlv1.GetURLRequest) (*urlv1.GetURLResponse, error) {
 	link, err := h.service.GetURL(ctx, req.ShortCode)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, mapError(ctx, err)
 	}
 
 	var expiresAt int64

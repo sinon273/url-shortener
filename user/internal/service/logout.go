@@ -3,6 +3,7 @@ package user_service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 )
 
 func (s *Service) Logout(ctx context.Context, sessionID string) error {
@@ -10,7 +11,9 @@ func (s *Service) Logout(ctx context.Context, sessionID string) error {
 	if err != nil {
 		return fmt.Errorf("revoke session: %w", err)
 	}
-	_ = s.cache.DelSession(ctx, sessionID)
-
+	err = s.cache.DelSession(ctx, sessionID)
+	if err != nil {
+		slog.ErrorContext(ctx, "failed to delete session cache", "err", err, "session_id", sessionID)
+	}
 	return nil
 }

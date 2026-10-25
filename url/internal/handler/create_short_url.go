@@ -2,6 +2,7 @@ package url_handler
 
 import (
 	"context"
+	"log/slog"
 
 	urlv1 "github.com/sinon273/url-shortener/shared/pkg/proto/url/v1"
 )
@@ -9,9 +10,10 @@ import (
 func (h *Handler) CreateShortURL(ctx context.Context, req *urlv1.CreateShortURLRequest) (*urlv1.CreateShortURLResponse, error) {
 	shortCode, shortURL, err := h.service.CreateShortURL(ctx, req.OriginalUrl, req.UserId, req.ExpiresIn)
 	if err != nil {
-		return nil, mapError(err)
+		return nil, mapError(ctx, err)
 	}
 
+	slog.InfoContext(ctx, "short url created", "short_code", shortCode)
 	return &urlv1.CreateShortURLResponse{
 		ShortCode: shortCode,
 		ShortUrl:  shortURL,

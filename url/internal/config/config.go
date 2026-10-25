@@ -17,6 +17,10 @@ type Config struct {
 	GRPCPort        string
 	ShortURLBase    string
 	KafkaBrokers    []string
+	MetricsPort     string
+	OtelExporter    string
+	OtelService     string
+	LogLevel        string
 }
 
 func Load() (*Config, error) {
@@ -32,6 +36,10 @@ func Load() (*Config, error) {
 	grpcPort := os.Getenv("URL_SERVICE_PORT")
 	shortURLBase := os.Getenv("SHORT_URL_BASE")
 	kafkaBrokersRaw := os.Getenv("KAFKA_BROKERS")
+	metricsPort := os.Getenv("METRICS_PORT")
+	otelExporter := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT")
+	otelService := os.Getenv("OTEL_SERVICE_NAME")
+	logLevel := os.Getenv("LOG_LEVEL")
 
 	if mongoURI == "" {
 		return nil, fmt.Errorf("MONGO_URI is required")
@@ -57,6 +65,18 @@ func Load() (*Config, error) {
 	if kafkaBrokersRaw == "" {
 		return nil, fmt.Errorf("KAFKA_BROKERS is required")
 	}
+	if metricsPort == "" {
+		return nil, fmt.Errorf("METRICS_PORT is required")
+	}
+	if otelExporter == "" {
+		return nil, fmt.Errorf("OTEL_EXPORTER_OTLP_ENDPOINT is required")
+	}
+	if otelService == "" {
+		return nil, fmt.Errorf("OTEL_SERVICE_NAME is required")
+	}
+	if logLevel == "" {
+		return nil, fmt.Errorf("LOG_LEVEL is required")
+	}
 
 	return &Config{
 		MongoURI:        mongoURI,
@@ -66,5 +86,9 @@ func Load() (*Config, error) {
 		GRPCPort:        grpcPort,
 		ShortURLBase:    shortURLBase,
 		KafkaBrokers:    strings.Split(kafkaBrokersRaw, ","),
+		MetricsPort:     metricsPort,
+		OtelExporter:    otelExporter,
+		OtelService:     otelService,
+		LogLevel:        logLevel,
 	}, nil
 }
