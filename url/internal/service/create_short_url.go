@@ -88,16 +88,14 @@ func (s *Service) CreateShortURL(ctx context.Context, originalURL, userID string
 			shortCode = code
 			break
 		}
-
 		if errors.Is(err, url_domain.ErrAlreadyExists) {
 			continue
 		}
-
-		err = s.cache.DecrCounter(ctx, userID)
-		if err != nil {
-			slog.ErrorContext(ctx, "failed to cache decrCounter", "err", err, "user_id", userID)
+		createErr := err
+		if decrErr := s.cache.DecrCounter(ctx, userID); decrErr != nil {
+			slog.ErrorContext(ctx, "failed to cache decrCounter", "err", decrErr, "user_id", userID)
 		}
-		return "", "", err
+		return "", "", createErr
 	}
 
 	if shortCode == "" {

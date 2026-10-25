@@ -12,6 +12,8 @@ import (
 	"syscall"
 	"time"
 
+	"log/slog"
+
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -31,7 +33,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"log/slog"
 )
 
 func main() {
@@ -56,7 +57,11 @@ func main() {
 		slog.Error("failed to init tracing: ", "err", err)
 		os.Exit(1)
 	}
-	defer shutdown(context.Background())
+	defer func() {
+		if err := shutdown(context.Background()); err != nil {
+			slog.Error("failed to shutdown tracing", "err", err)
+		}
+	}()
 
 	migration, err := migrate.New("file://migrations", cfg.DatabaseURL)
 	if err != nil {
@@ -81,7 +86,11 @@ func main() {
 	rdb := redis.NewClient(&redis.Options{
 		Addr: cfg.RedisAddr,
 	})
-	defer rdb.Close()
+	defer func() {
+		if err := rdb.Close(); err != nil {
+			slog.Error("failed to close redis", "err", err)
+		}
+	}()
 
 	if err = rdb.Ping(ctx).Err(); err != nil {
 		slog.Error("failed to ping redis: ", "err", err)
