@@ -80,7 +80,7 @@ func (r *Repository) ListByUser(ctx context.Context, userID string, limit int, c
 	if err != nil {
 		return nil, "", fmt.Errorf("find link by user_id: %w", err)
 	}
-	defer cur.Close(ctx)
+	defer func() { _ = cur.Close(ctx) }()
 
 	var models []LinkModel
 	if err = cur.All(ctx, &models); err != nil {

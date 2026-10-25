@@ -11,7 +11,7 @@ import (
 )
 
 func (c *Client) GetLinkOwner(ctx context.Context, shortCode string) (string, error) {
-	getUrlResponse, err := c.URLServiceClient.GetURL(ctx, &urlv1.GetURLRequest{ShortCode: shortCode})
+	getUrlResponse, err := c.GetURL(ctx, &urlv1.GetURLRequest{ShortCode: shortCode})
 	if err != nil {
 		switch status.Code(err) {
 		case codes.NotFound:

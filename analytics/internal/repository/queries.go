@@ -34,7 +34,7 @@ func (r *Repository) ClicksByDay(ctx context.Context, shortCode string, days int
 	if err != nil {
 		return nil, fmt.Errorf("get clicks by day: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var result []analytics_domain.DayClicks
 	for rows.Next() {
@@ -65,7 +65,7 @@ func (r *Repository) TopReferers(ctx context.Context, shortCode string, days int
 	if err != nil {
 		return nil, fmt.Errorf("get top referers: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	var result []analytics_domain.RefererClicks
 	for rows.Next() {

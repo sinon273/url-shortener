@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"log/slog"
+
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 	"github.com/segmentio/kafka-go"
@@ -32,7 +34,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	"log/slog"
 )
 
 func main() {
@@ -59,14 +60,22 @@ func main() {
 		slog.Error("failed to init tracing", "err", err)
 		os.Exit(1)
 	}
-	defer shutdown(context.Background())
+	defer func() {
+		if err := shutdown(context.Background()); err != nil {
+			slog.Error("failed to shutdown tracing", "err", err)
+		}
+	}()
 
 	mongoClient, err := mongo.Connect(options.Client().ApplyURI(cfg.MongoURI))
 	if err != nil {
 		slog.Error("failed to connect mongo", "err", err)
 		os.Exit(1)
 	}
-	defer mongoClient.Disconnect(ctx)
+	defer func() {
+		if err := mongoClient.Disconnect(ctx); err != nil {
+			slog.Error("failed to disconnect mongo", "err", err)
+		}
+	}()
 
 	if err = mongoClient.Ping(ctx, nil); err != nil {
 		slog.Error("failed to ping mongo", "err", err)
@@ -75,7 +84,11 @@ func main() {
 	coll := mongoClient.Database(cfg.MongoDB).Collection("links")
 
 	rdb := redis.NewClient(&redis.Options{Addr: cfg.RedisAddr})
-	defer rdb.Close()
+	defer func() {
+		if err := rdb.Close(); err != nil {
+			slog.Error("failed to close redis", "err", err)
+		}
+	}()
 
 	if err = rdb.Ping(ctx).Err(); err != nil {
 		slog.Error("failed to ping redis", "err", err)
@@ -91,7 +104,11 @@ func main() {
 		slog.Error("failed to connect user service", "err", err)
 		os.Exit(1)
 	}
-	defer userConn.Close()
+	defer func() {
+		if err := userConn.Close(); err != nil {
+			slog.Error("failed to close user conn", "err", err)
+		}
+	}()
 
 	kafkaWriter := &kafka.Writer{
 		Addr:                   kafka.TCP(cfg.KafkaBrokers...),
@@ -99,7 +116,11 @@ func main() {
 		AllowAutoTopicCreation: true,
 		Balancer:               &kafka.LeastBytes{},
 	}
-	defer kafkaWriter.Close()
+	defer func() {
+		if err := kafkaWriter.Close(); err != nil {
+			slog.Error("failed to close kafka writer", "err", err)
+		}
+	}()
 
 	producer := url_producer.NewProducer(kafkaWriter)
 

@@ -61,7 +61,11 @@ func main() {
 		slog.Error("failed to init tracing", "err", err)
 		os.Exit(1)
 	}
-	defer shutdown(context.Background())
+	defer func() {
+		if err := shutdown(context.Background()); err != nil {
+			slog.Error("failed to shutdown tracing", "err", err)
+		}
+	}()
 
 	chConn, err := clickhouse.Open(&clickhouse.Options{
 		Addr: []string{cfg.ClickHouseAddr},
@@ -75,7 +79,11 @@ func main() {
 		slog.Error("failed to connect clickhouse", "err", err)
 		os.Exit(1)
 	}
-	defer chConn.Close()
+	defer func() {
+		if err := chConn.Close(); err != nil {
+			slog.Error("failed to close clickhouse", "err", err)
+		}
+	}()
 
 	for i := 0; i < 10; i++ {
 		if err = chConn.Ping(ctx); err == nil {
@@ -99,7 +107,11 @@ func main() {
 			DualStack: true,
 		},
 	})
-	defer reader.Close()
+	defer func() {
+		if err := reader.Close(); err != nil {
+			slog.Error("failed to close kafka reader", "err", err)
+		}
+	}()
 
 	urlConn, err := grpc.NewClient(
 		cfg.URLServiceAddr,
@@ -110,7 +122,11 @@ func main() {
 		slog.Error("failed to connect url service", "err", err)
 		os.Exit(1)
 	}
-	defer urlConn.Close()
+	defer func() {
+		if err := urlConn.Close(); err != nil {
+			slog.Error("failed to close url conn", "err", err)
+		}
+	}()
 
 	urlServiceClient := urlv1.NewURLServiceClient(urlConn)
 
@@ -143,7 +159,12 @@ func main() {
 		slog.Error("failed to listen", "err", err)
 		os.Exit(1)
 	}
-	defer lis.Close()
+
+	defer func() {
+		if err := lis.Close(); err != nil {
+			slog.Error("failed to close listener", "err", err)
+		}
+	}()
 
 	mux := http.NewServeMux()
 
