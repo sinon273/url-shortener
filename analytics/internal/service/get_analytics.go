@@ -16,7 +16,7 @@ func (s *Service) GetAnalytics(ctx context.Context, shortCode, userID string, da
 	}
 	owner, err := s.urlClient.GetLinkOwner(ctx, shortCode)
 	if err != nil {
-		return analytics_domain.Analytics{}, fmt.Errorf("get_link_owner", err)
+		return analytics_domain.Analytics{}, fmt.Errorf("get_link_owner: %w", err)
 	}
 	if owner != userID {
 		return analytics_domain.Analytics{}, analytics_domain.ErrPermissionDenied
